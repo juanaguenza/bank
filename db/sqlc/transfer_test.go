@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomTransfer (t *testing.T, from_account Account, to_account Account) Transfer {
-	arg := CreateTransferParams {
+func createRandomTransfer(t *testing.T, from_account Account, to_account Account) Transfer {
+	arg := CreateTransferParams{
 		FromAccountID: from_account.ID,
-		ToAccountID: to_account.ID,
-		Amount: util.RandomMoney(),
+		ToAccountID:   to_account.ID,
+		Amount:        util.RandomMoney(),
 	}
 
 	transfer, err := testQueries.CreateTransfer(context.Background(), arg)
@@ -31,14 +31,14 @@ func createRandomTransfer (t *testing.T, from_account Account, to_account Accoun
 	return transfer
 }
 
-func TestCreateTransfer (t *testing.T) {
+func TestCreateTransfer(t *testing.T) {
 	from_account := createRandomAccount(t)
 	to_account := createRandomAccount(t)
 
 	createRandomTransfer(t, from_account, to_account)
 }
 
-func TestGetTransfer (t *testing.T) {
+func TestGetTransfer(t *testing.T) {
 	from_account := createRandomAccount(t)
 	to_account := createRandomAccount(t)
 
@@ -56,7 +56,7 @@ func TestGetTransfer (t *testing.T) {
 	require.WithinDuration(t, transfer.CreatedAt, queriedTransfer.CreatedAt, time.Second)
 }
 
-func TestListTransfers (t *testing.T) {
+func TestListTransfers(t *testing.T) {
 	from_account := createRandomAccount(t)
 	to_account := createRandomAccount(t)
 
@@ -64,11 +64,11 @@ func TestListTransfers (t *testing.T) {
 		createRandomTransfer(t, from_account, to_account)
 	}
 
-	arg := ListTransfersParams {
+	arg := ListTransfersParams{
 		FromAccountID: from_account.ID,
-		ToAccountID: to_account.ID,
-		Limit: 5,
-		Offset: 5,
+		ToAccountID:   to_account.ID,
+		Limit:         5,
+		Offset:        5,
 	}
 
 	transfers, err := testQueries.ListTransfers(context.Background(), arg)

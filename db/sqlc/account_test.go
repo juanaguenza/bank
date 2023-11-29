@@ -12,7 +12,7 @@ import (
 
 func createRandomAccount(t *testing.T) Account {
 	// Randomly generate the data for our account
-	arg := CreateAccountParams {
+	arg := CreateAccountParams{
 		Owner:    util.RandomOwner(),
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
@@ -57,11 +57,11 @@ func TestGetAccount(t *testing.T) {
 	require.WithinDuration(t, account.CreatedAt, queriedAccount.CreatedAt, time.Second)
 }
 
-func TestUpdateAccount (t *testing.T) {
+func TestUpdateAccount(t *testing.T) {
 	account := createRandomAccount(t)
 
-	arg := UpdateAccountParams {
-		ID: account.ID,
+	arg := UpdateAccountParams{
+		ID:      account.ID,
 		Balance: util.RandomMoney(),
 	}
 
@@ -89,12 +89,12 @@ func TestDeleteAccount(t *testing.T) {
 }
 
 func TestListAccounts(t *testing.T) {
-	for i:=0; i < 10; i++ {
+	for i := 0; i < 10; i++ {
 		createRandomAccount(t)
 	}
 
-	arg := ListAccountsParams {
-		Limit: 5,
+	arg := ListAccountsParams{
+		Limit:  5,
 		Offset: 5,
 	}
 
@@ -102,7 +102,7 @@ func TestListAccounts(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Len(t, accounts, 5)
-	
+
 	for _, account := range accounts {
 		require.NotEmpty(t, account)
 	}
