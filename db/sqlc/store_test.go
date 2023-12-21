@@ -123,3 +123,61 @@ func TestTransferTx(t *testing.T) {
 	require.Equal(t, fromAccount.Balance-int64(n)*amount, updatedFromAccount.Balance)
 	require.Equal(t, toAccount.Balance+int64(n)*amount, updatedToAccount.Balance)
 }
+
+func TestTransferTxDeadlock(t *testing.T) {
+	store := NewStore(testDB)
+
+	fromAccount := createRandomAccount(t)
+	toAccount := createRandomAccount(t)
+	fmt.Println(">> before:", fromAccount.Balance, toAccount.Balance)
+
+	// run n concurrent transfer transaction (concurrent goroutines)
+	n := 10
+	amount := int64(10)
+
+	// Use channels to connect our concurrent goroutines
+	// One channel to receive errors, another channel to receive the TransferTxResults
+	errs := make(chan error)
+
+	for i := 0; i < n; i++ {
+		fromAccountID := fromAccount.ID
+		toAccountID := toAccount.ID
+
+		if i%2 == 1 {
+			fromAccountID = toAccount.ID
+			toAccountID = fromAccount.ID
+		}
+		// Use go keyword to start a new routine
+		go func() {
+			ctx := context.Background()
+			_, err := store.TransferTx(ctx, TransferTxParams{
+				FromAccountID: fromAccountID,
+				ToAccountID:   toAccountID,
+				Amount:        amount,
+			})
+
+			// Send our error to the errors channel
+			// Send our result to the results channel
+			errs <- err
+		}()
+	}
+
+	// Check results
+	for i := 0; i < n; i++ {
+		// Receive the error from the channel
+		err := <-errs
+		require.NoError(t, err)
+	}
+
+	// Check the final updated balances
+	updatedFromAccount, err := testQueries.GetAccount(context.Background(), fromAccount.ID)
+	require.NoError(t, err)
+
+	updatedToAccount, err := testQueries.GetAccount(context.Background(), toAccount.ID)
+	require.NoError(t, err)
+
+	fmt.Println(">> after:", updatedFromAccount.Balance, updatedToAccount.Balance)
+
+	require.Equal(t, fromAccount.Balance, updatedFromAccount.Balance)
+	require.Equal(t, toAccount.Balance, updatedToAccount.Balance)
+}
